@@ -1,0 +1,14 @@
+ChangeLog
+MANIFEST
+Makefile.PL
+lib/XML/Compile/WSDL11.pm
+lib/XML/Compile/WSDL11/xsd/wsdl-http.xsd
+lib/XML/Compile/WSDL11/xsd/wsdl-mime.xsd
+lib/XML/Compile/WSDL11/xsd/wsdl.xsd
+t/50wsdl.t
+t/51wsdloneway.t
+t/52wsdlfault.t
+t/53wsdlrpclit.t
+t/54wsdlrpclit.t
+t/55wsdlrpcone.t
+t/TestTools.pm
