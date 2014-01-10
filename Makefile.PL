@@ -2,11 +2,11 @@ use ExtUtils::MakeMaker;
 
 use 5.008;
 
-my $version = '3.00';
+my $version = '3.01';
 
 my $prereq =
    { XML::Compile         => 1.37
-   , XML::Compile::SOAP11 => '3.00'
+   , XML::Compile::SOAP11 => '3.03'
    , XML::Compile::Cache  => 0.995
    , Log::Report          => '1.00'
    , Test::More           => 0.54
@@ -25,6 +25,7 @@ WriteMakefile
 sub MY::postamble { <<'__POSTAMBLE' }
 
 # for DIST
+EXTENDS		= ../XMLCache:../XMLSOAP:../XMLCompile
 RAWDIR          = ../public_html/xml-compile-wsdl11/raw
 DISTDIR         = ../public_html/xml-compile-wsdl11/source
 LICENSE         = artistic

@@ -14,11 +14,10 @@ use XML::Compile::SOAP::Extension;
 use XML::Compile::SOAP::Operation  ();
 use XML::Compile::Transport  ();
 
-use List::Util               qw/first/;
-use Scalar::Util             qw/blessed/;
-
-XML::Compile->addSchemaDirs(__FILE__);
-XML::Compile->knownNamespace(&WSDL11 => 'wsdl.xsd');
+use File::Spec     ();
+use List::Util     qw/first/;
+use Scalar::Util   qw/blessed/;
+use File::Basename qw/dirname/;
 
 =chapter NAME
 
@@ -31,7 +30,9 @@ XML::Compile::WSDL11 - create SOAP messages defined by WSDL 1.1
  use XML::Compile::SOAP11;      # use SOAP version 1.1
  use XML::Compile::Transport::SOAPHTTP;
 
- my $wsdl = XML::Compile::WSDL11->new($wsdlfile);
+ my $wsdl = XML::Compile::WSDL11->new($wsdlfile
+   , server_type => 'BEA'
+   );
  $wsdl->addWSDL(...more WSDL files...);
  $wsdl->importDefinitions(...more schemas...);
 
@@ -96,6 +97,13 @@ to tell you how!)
 =c_method new XML, OPTIONS
 The XML is the WSDL file, which is anything accepted by
 M<XML::Compile::dataToXML()>.
+
+=option  server_type NAME
+=default server_type C<undef>
+[3.01] When you specify the implementation of the server, we can work
+around some of the known bugs and limitation.
+Read M<XML::Compile::SOAP> section "Supported servers" for supported
+servers.
 =cut
 
 sub init($)
@@ -126,8 +134,12 @@ sub init($)
       );
 
     $self->{XCW_dcopts} = {};
+    $self->{XCW_server} = $args->{server_type};
 
-    $self->importDefinitions(WSDL11);
+    my @xsds = map File::Spec->catdir(dirname(__FILE__), 'WSDL11', 'xsd', $_)
+      , qw(wsdl.xsd wsdl-mime.xsd wsdl-http.xsd);
+
+    $self->importDefinitions(\@xsds, element_form_default => 'qualified');
 
     $self->addWSDL($_) for ref $wsdl eq 'ARRAY' ? @$wsdl : $wsdl;
     $self;
@@ -376,6 +388,9 @@ Ignored when the parameter list starts with a NAME (which is an
 alternative for this option).  Optional when there is only
 one operation defined within the portType.
 
+=option  server_type NAME
+=default server_type C<undef>
+Overrules M<new(server_type)>.
 =cut
 
 # new options, then also add them to the list in compileClient()
@@ -438,7 +453,6 @@ sub operation(@)
     unless($protocol)
     {   my $pkg = $opns eq WSDL11SOAP   ? 'SOAP11'
                 : $opns eq WSDL11SOAP12 ? 'SOAP12'
-                : $opns eq WSDL11HTTP   ? 'SOAP10'
                 :                         undef;
 
         if($pkg)
@@ -533,6 +547,8 @@ sub operation(@)
 
      , wsdl      => $self
      , action    => $args{action}
+
+     , server_type => $args{server_type} || $self->{XCW_server}
      );
  
     $operation;

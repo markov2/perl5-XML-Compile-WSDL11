@@ -5,5 +5,12 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
+version 3.01: Fri Jan 10 15:41:39 CET 2014
+	Fixes:
+	- documentation needs info from XML::Compile, ~::Cache, and ~::SOAP
+	Improvements:
+	- support for the server_type option.
+	- load wsdl-http and wsdl-mime schema's by default
+
 version 3.00: Mon Jan  6 00:56:39 CET 2014
 	Split-off from XML::Compile:SOAP
