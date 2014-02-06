@@ -5,6 +5,11 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
+version 3.02: Thu Feb  6 17:09:29 CET 2014
+
+	Improvements:
+	- change documentation style
+
 version 3.01: Fri Jan 10 15:41:39 CET 2014
 	Fixes:
 	- documentation needs info from XML::Compile, ~::Cache, and ~::SOAP

@@ -94,8 +94,8 @@ to tell you how!)
 
 =section Constructors
 
-=c_method new XML, OPTIONS
-The XML is the WSDL file, which is anything accepted by
+=c_method new $xml, %options
+The $xml is the WSDL file, which is anything accepted by
 M<XML::Compile::dataToXML()>.
 
 =option  server_type NAME
@@ -153,7 +153,7 @@ sub schemas(@) { panic "schemas() removed in v2.00, not needed anymore" }
 
 =section Compilers
 
-=method compileAll ['READERS'|'WRITERS'|'RW'|'CALLS', [NAMESPACE]]
+=method compileAll [ <'READERS'|'WRITERS'|'RW'|'CALLS'>, [$ns] ]
 [2.20] With explicit C<CALLS> or without any parameter, it will call
 M<compileCalls()>. Otherwise, see M<XML::Compile::Cache::compileAll()>.
 =cut
@@ -168,12 +168,12 @@ sub compileAll(;$$)
     $self;
 } 
 
-=method compileCalls OPTIONS
-[2.20] Compile a handler for each of the available operations. The OPTIONS are
+=method compileCalls %options
+[2.20] Compile a handler for each of the available operations. The %options are
 passed to each call of M<compileClient()>, but will be overruled by more
 specific declared options.
 
-Additionally, OPTIONS can contain C<service>, C<port>, and C<binding>
+Additionally, %options can contain C<service>, C<port>, and C<binding>
 to limit the set of involved calls. See M<operations()> for details on
 these options.
 
@@ -205,12 +205,12 @@ sub compileCalls(@)
     $self;
 }
 
-=method compileCall OPERATION|OPNAME, OPTIONS
-[2.37] The call to the OPERATION object (which extends
+=method compileCall $operation|$opname, %options
+[2.37] The call to the $operation object (which extends
 M<XML::Compile::SOAP::Operation>) gets compiled and cached so it can
 be used with M<call()>.
 
-[2.38] Alteratively to an OPERATION object, you may also specify an
+[2.38] Alteratively to an $operation object, you may also specify an
 operation by name.
 
 =example
@@ -235,8 +235,8 @@ sub compileCall($@)
     $self->{XCW_ccode}{$name} = $op->compileClient(@opts);
 }
 
-=method call OPNAME, DATA
-[2.20] Call the OPNAME (operation name) with DATA (HASH or LIST of parameters).
+=method call $opname, $data
+[2.20] Call the $opname (operation name) with $data (HASH or LIST of parameters).
 This only works when you have called M<compileCalls()> beforehand,
 always during the initiation phase of the program.
 
@@ -264,8 +264,8 @@ sub call($@)
 
 =section Extension
 
-=method addWSDL XMLDATA
-The XMLDATA must be acceptable to M<XML::Compile::dataToXML()> and 
+=method addWSDL $xmldata
+The $xmldata must be acceptable to M<XML::Compile::dataToXML()> and 
 should represent the top-level of a (partial) WSDL document.
 The specification can be spread over multiple files, each of
 which must have a C<definition> root element.
@@ -349,9 +349,9 @@ sub addWSDL($)
     $self;
 }
 
-=method namesFor CLASS
-Returns the list of names available for a certain definition CLASS in
-the WSDL. See M<index()> for a way to determine the available CLASS
+=method namesFor $class
+Returns the list of names available for a certain definition $class in
+the WSDL. See M<index()> for a way to determine the available $class
 information.
 
 =cut
@@ -361,7 +361,7 @@ sub namesFor($)
     keys %{shift->index($class) || {}};
 }
 
-=method operation [NAME], OPTIONS
+=method operation [$name], %options
 Collect all information for a certain operation.  Returned is an
 M<XML::Compile::SOAP::Operation> object.
 
@@ -384,7 +384,7 @@ Required when more than one port is defined.
 Overrule the soapAction from the WSDL.
 
 =requires operation NAME
-Ignored when the parameter list starts with a NAME (which is an
+Ignored when the parameter list starts with a $name (which is an
 alternative for this option).  Optional when there is only
 one operation defined within the portType.
 
@@ -554,13 +554,13 @@ sub operation(@)
     $operation;
 }
 
-=method compileClient [NAME], OPTIONS
+=method compileClient [$name], %options
 Creates an M<XML::Compile::SOAP::Operation> temporary object using
 M<operation()>, and then calls C<compileClient()> on that.  This
 results in a code reference which will handle all client-server
 SOAP exchange.
 
-The OPTIONS available include all of the options for:
+The %options available include all of the options for:
 =over 4
 =item *
 M<operation()> (i.e. C<service> and C<port>), and all of
@@ -600,12 +600,12 @@ sub compileClient(@)
 
 =section Administration
 
-=method declare GROUP, COMPONENT|ARRAY, OPTIONS
-Register specific compile OPTIONS for the specific COMPONENT. See also
-M<XML::Compile::Cache::declare()>. The GROUP is either C<READER>,
-C<WRITER>, C<RW> (both reader and writer), or C<OPERATION>.  As COMPONENT,
+=method declare $group, $component|ARRAY, %options
+Register specific compile %options for the specific $component. See also
+M<XML::Compile::Cache::declare()>. The $group is either C<READER>,
+C<WRITER>, C<RW> (both reader and writer), or C<OPERATION>.  As $component,
 you specify the element name (for readers and writers) or operation name
-(for operations). OPTIONS are specified as LIST, ARRAY or HASH.
+(for operations). %options are specified as LIST, ARRAY or HASH.
 
 =example
    $wsdl->declare(OPERATION => 'GetStockPrice', @extra_opts);
@@ -637,12 +637,12 @@ sub declare($$@)
 All of the following methods are usually NOT meant for end-users. End-users
 should stick to the M<operation()> and M<compileClient()> methods.
 
-=method index [CLASS, [QNAME]]
-With a CLASS and QNAME, it returns one WSDL definition HASH or undef.
-Returns the index for the CLASS group of names as HASH.  When no CLASS is
+=method index [$class, [$qname]]
+With a $class and $qname, it returns one WSDL definition HASH or undef.
+Returns the index for the $class group of names as HASH.  When no $class is
 specified, a HASH of HASHes is returned with the CLASSes on the top-level.
 
-CLASS includes C<service>, C<binding>, C<portType>, and C<message>.
+$class includes C<service>, C<binding>, C<portType>, and C<message>.
 =cut
 
 sub index(;$$)
@@ -655,16 +655,16 @@ sub index(;$$)
     @_ ? $class->{ (shift) } : $class;
 }
 
-=method findDef CLASS, [QNAME|PREFIXED|NAME]
-With a QNAME, the HASH which contains the parsed XML information
-from the WSDL template for that CLASS-NAME combination is returned.
-You may also have a PREFIXED name, using one of the predefined namespace
-abbreviations.  Otherwise, NAME is considered to be the localName in
-that class.  When the NAME is not found, an error is produced.
+=method findDef $class, <$qname|$prefixed|$name>
+With a $qname, the HASH which contains the parsed XML information
+from the WSDL template for that $class-$name combination is returned.
+You may also have a $prefixed name, using one of the predefined namespace
+abbreviations.  Otherwise, $name is considered to be the localName in
+that class.  When the $name is not found, an error is produced.
 
-Without QNAME in SCALAR context, there may only be one such name
+Without $qname in SCALAR context, there may only be one such name
 defined otherwise an error is produced.  In LIST context, all definitions
-in CLASS are returned.
+in $class are returned.
 
 =example
  $service  = $obj->findDef(service => 'http://xyz');
@@ -704,7 +704,7 @@ sub findDef($;$)
       , class => $class, alts => join("\n    ", '', @alts);
 }
 
-=method operations OPTIONS
+=method operations %options
 Return a list with all operations defined in the WSDL.
 
 =option  service NAME
@@ -773,7 +773,7 @@ sub operations(@)
     @ops;
 }
 
-=method endPoint OPTIONS
+=method endPoint %options
 [2.20] Returns the address of the server, as specified by the WSDL. When
 there are no alternatives for service or port, you not not need to
 specify those parameters.
@@ -823,8 +823,8 @@ sub endPoint(@)
     ();
 }
 
-=method printIndex [FILEHANDLE], OPTIONS
-For available OPTIONS, see M<operations()>.  This method is useful to
+=method printIndex [$fh], %options
+For available %options, see M<operations()>.  This method is useful to
 understand the structure of your WSDL: it shows a nested list of
 services, bindings, ports and portTypes.
 =cut
@@ -852,18 +852,18 @@ sub printIndex(@)
     }
 }
 
-=method explain OPERATION, FORMAT, DIRECTION, OPTIONS
+=method explain $operation, $format, $direction, %options
 [2.13]
 Produce templates (see M<XML::Compile::Schema::template()> which detail
-the use of the OPERATION. Currently, only the C<PERL> template FORMAT
+the use of the $operation. Currently, only the C<PERL> template $format
 is available.
 
-The DIRECTION of operation is either C<INPUT> (input for the server,
+The $direction of operation is either C<INPUT> (input for the server,
 hence to be produced by the client), or C<OUTPUT> (from the server,
 received by the client).
 
 The actual work is done by M<XML::Compile::SOAP::Operation::explain()>. The
-OPTIONS passed to that method include C<recurse> and C<skip_header>.
+%options passed to that method include C<recurse> and C<skip_header>.
 
 =example
   print $wsdl->explain('CheckStatus', PERL => 'INPUT');
