@@ -10,5 +10,4 @@ t/51wsdloneway.t
 t/52wsdlfault.t
 t/53wsdlrpclit.t
 t/54wsdlrpclit.t
-t/55wsdlrpcone.t
 t/TestTools.pm

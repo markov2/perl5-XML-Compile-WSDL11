@@ -5,6 +5,15 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
+version 3.03: Mon Dec 22 08:58:55 CET 2014
+
+	Fixes:
+	- ::WSDL11 should load ::SOAP [Michel Jansen]
+
+	Improvements:
+	- add compileCall() option alias
+	- enabled rpc-decoded style
+
 version 3.02: Thu Feb  6 17:09:29 CET 2014
 
 	Improvements:

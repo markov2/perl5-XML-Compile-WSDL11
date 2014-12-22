@@ -8,6 +8,7 @@ use Log::Report 'xml-compile-soap', syntax => 'SHORT';
 
 use XML::Compile             ();      
 use XML::Compile::Util       qw/pack_type unpack_type/;
+use XML::Compile::SOAP       ();
 use XML::Compile::SOAP::Util qw/:wsdl11/;
 use XML::Compile::SOAP::Extension;
 
@@ -30,6 +31,10 @@ XML::Compile::WSDL11 - create SOAP messages defined by WSDL 1.1
  use XML::Compile::SOAP11;      # use SOAP version 1.1
  use XML::Compile::Transport::SOAPHTTP;
 
+ # you want some trace?
+ use Log::Report mode => 'DEBUG';   # or 'VERBOSE'
+
+ # collect one or more wsdls and xsds in one object
  my $wsdl = XML::Compile::WSDL11->new($wsdlfile
    , server_type => 'BEA'
    );
@@ -180,6 +185,15 @@ these options.
 You may declare additional specific compilation options with the
 M<declare()> method.
 
+=option  long_names BOOLEAN
+=default long_names C<false>
+[3.03] Prepend the service name to the operation name to produce an alias
+(see M<compileCall(alias)>) for the compiled call.  If the service name is
+'X' and the operation name is 'Y', then the alias becomes 'X#Y'.
+
+You will need this if you have multiple operations with the same name
+in your WSDL (-collection).
+
 =example
    my $trans = XML::Compile::Transport::SOAPHTTP
      ->new(timeout => 500, address => $wsdl->endPoint);
@@ -194,6 +208,7 @@ M<declare()> method.
 
 sub compileCalls(@)
 {   my ($self, %args) = @_;
+    my $long = $args{long_names};
 
     my @ops = $self->operations
       ( service => delete $args{service}
@@ -201,7 +216,11 @@ sub compileCalls(@)
       , binding => delete $args{binding}
       );
 
-    $self->compileCall($_, %args) for @ops;
+    foreach my $op (@ops)
+    {   my $alias = $long ? $op->longName : undef;
+        $self->compileCall($op, alias => $alias, %args);
+    }
+
     $self;
 }
 
@@ -213,6 +232,12 @@ be used with M<call()>.
 [2.38] Alteratively to an $operation object, you may also specify an
 operation by name.
 
+=option  alias NAME
+=default alias C<undef>
+[3.03] When defined, the compiled operation will be stored with the
+alias name in stead of the operation name.  This may make your code
+more readible or solve naming conflicts.  See M<compileCall(prefixed)>
+
 =example
   my $op = $wsdl->operation(name => 'getInfo');
   $wsdl->compileCall($op);
@@ -223,15 +248,18 @@ operation by name.
 =cut
 
 sub compileCall($@)
-{   my ($self, $oper, @opts) = @_;
-    my $op    = blessed $oper ? $oper : $self->operation($oper, @opts);
+{   my ($self, $oper, %opts) = @_;
+    my $alias = delete $opts{alias};
+    my $op    = blessed $oper ? $oper : $self->operation($oper, %opts);
 
-    my $name  = $op->name;
+    my $name  = $alias || $op->name;
     error __x"a compiled call for {name} already exists", name => $name
         if $self->{XCW_ccode}{$name};
 
     my $dopts = $self->{XCW_dcopts} || {};
+    my @opts  = %opts;
     push @opts, ref $dopts eq 'ARRAY' ? @$dopts : %$dopts;
+    trace "compiling call `$name'";
     $self->{XCW_ccode}{$name} = $op->compileClient(@opts);
 }
 
@@ -255,7 +283,7 @@ sub call($@)
         or error __x"you can only use call() after compileCalls()";
 
     my $call  = $codes->{$name}
-        or error __x"operation {name} is not known", name => $name;
+        or error __x"operation `{name}' is not known", name => $name;
     
     $call->(@_);
 }
@@ -264,15 +292,16 @@ sub call($@)
 
 =section Extension
 
-=method addWSDL $xmldata
+=method addWSDL $xmldata, %options
 The $xmldata must be acceptable to M<XML::Compile::dataToXML()> and 
 should represent the top-level of a (partial) WSDL document.
 The specification can be spread over multiple files, each of
 which must have a C<definition> root element.
+
 =cut
 
-sub addWSDL($)
-{   my ($self, $data) = @_;
+sub addWSDL($%)
+{   my ($self, $data, %args) = @_;
     defined $data or return ();
 
     my ($node, %details) = $self->dataToXML($data);
@@ -322,12 +351,12 @@ sub addWSDL($)
     # no service block when only one port
     unless($index->{service})
     {   # only from this WSDL, cannot use collective $index
-        my @portTypes = map { $_->{wsdl_portType} || () } @$toplevels;
+        my @portTypes = map $_->{wsdl_portType}||(), @$toplevels;
         @portTypes==1
             or error __x"no service definition so needs 1 portType, found {nr}"
                  , nr => scalar @portTypes;
 
-        my @bindings = map { $_->{wsdl_binding} || () } @$toplevels;
+        my @bindings = map $_->{wsdl_binding}||(), @$toplevels;
         @bindings==1
             or error __x"no service definition so needs 1 binding, found {nr}"
                  , nr => scalar @bindings;
@@ -698,7 +727,6 @@ sub findDef($;$)
 
     return (values %$group)[0]
         if keys %$group==1;
-
     my @alts = map $self->prefixed($_), sort keys %$group;
     error __x"explicit selection required: pick one {class} from {alts}"
       , class => $class, alts => join("\n    ", '', @alts);
@@ -872,6 +900,10 @@ The actual work is done by M<XML::Compile::SOAP::Operation::explain()>. The
      , recurse => 1                 # explain options
      , port    => 'Soap12PortName'  # operation options
      );
+
+  foreach my $op ($wsdl->operations)
+  {  print $op->explain($wsdl, PERL => 'INPUT');
+  }
 =cut
 
 sub explain($$$@)
