@@ -5,13 +5,24 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
+version 3.04: Thu 15 Oct 09:11:04 CEST 2015
+
+	Fixes:
+	- better warning about missing modules, to be loaded
+	  rt.cpan.org#105270 [Ian Mitchell]
+
+	Improvements:
+	- ::WSDL11::addWSDL() now accepts an array of resources
+	- add bin/wsdl-explain.pl and bin/xsd-explain.pl, contributed
+	  by Wesley Schwengle of MintLab NL
+
 version 3.03: Mon Dec 22 08:58:55 CET 2014
 
 	Fixes:
 	- ::WSDL11 should load ::SOAP [Michel Jansen]
 
 	Improvements:
-	- add compileCall() option alias
+	- add compileCall() options 'alias' and 'long_names'
 	- enabled rpc-decoded style
 
 version 3.02: Thu Feb  6 17:09:29 CET 2014
@@ -22,6 +33,7 @@ version 3.02: Thu Feb  6 17:09:29 CET 2014
 version 3.01: Fri Jan 10 15:41:39 CET 2014
 	Fixes:
 	- documentation needs info from XML::Compile, ~::Cache, and ~::SOAP
+
 	Improvements:
 	- support for the server_type option.
 	- load wsdl-http and wsdl-mime schema's by default

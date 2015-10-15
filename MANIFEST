@@ -1,6 +1,8 @@
 ChangeLog
 MANIFEST
 Makefile.PL
+bin/wsdl-explain.pl
+bin/xsd-explain.pl
 lib/XML/Compile/WSDL11.pm
 lib/XML/Compile/WSDL11/xsd/wsdl-http.xsd
 lib/XML/Compile/WSDL11/xsd/wsdl-mime.xsd

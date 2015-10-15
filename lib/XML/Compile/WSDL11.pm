@@ -93,13 +93,13 @@ explicitly. Usually, interreferences between those files are broken.
 Often they reference over networks (you should never trust). So, on
 purpose you B<must explicitly load> the files you need from local disk!
 (of course, it is simple to find one-liners as work-arounds, but I will
-to tell you how!)
+not tell you how!  See M<XML::Compile::SOAP::FAQ>)
 
 =chapter METHODS
 
 =section Constructors
 
-=c_method new $xml, %options
+=c_method new [$xml], %options
 The $xml is the WSDL file, which is anything accepted by
 M<XML::Compile::dataToXML()>.
 
@@ -236,7 +236,7 @@ operation by name.
 =default alias C<undef>
 [3.03] When defined, the compiled operation will be stored with the
 alias name in stead of the operation name.  This may make your code
-more readible or solve naming conflicts.  See M<compileCall(prefixed)>
+more readible or solve naming conflicts.
 
 =example
   my $op = $wsdl->operation(name => 'getInfo');
@@ -292,7 +292,7 @@ sub call($@)
 
 =section Extension
 
-=method addWSDL $xmldata, %options
+=method addWSDL $xmldata|\@xmldata, %options
 The $xmldata must be acceptable to M<XML::Compile::dataToXML()> and 
 should represent the top-level of a (partial) WSDL document.
 The specification can be spread over multiple files, each of
@@ -303,6 +303,11 @@ which must have a C<definition> root element.
 sub addWSDL($%)
 {   my ($self, $data, %args) = @_;
     defined $data or return ();
+
+    if(ref $data eq 'ARRAY')
+    {   $self->addWSDL($_) for @$data;
+        return $self;
+    }
 
     my ($node, %details) = $self->dataToXML($data);
     defined $node or return $self;
@@ -332,7 +337,7 @@ sub addWSDL($%)
 
         if($which eq 'service')
         {   foreach my $port ( @{$def->{wsdl_port} || []} )
-            {   my $addr_label = first { /_address$/ } keys %$port
+            {   my $addr_label = first { /address$/ } keys %$port
                     or error __x"no address in port {port}"
                         , port => $port->{name};
                 my $first_addr = $port->{$addr_label};
@@ -340,7 +345,7 @@ sub addWSDL($%)
 
                 # Is XML::Compile::SOAP<version> loaded?
                 ref $first_addr eq 'HASH'
-                    or error __x"soap namespace {ns} not loaded"
+                    or error __x"wsdl namespace {ns} not loaded"
                        , ns => $first_addr->namespaceURI;
 
                 $index->{port}{pack_type $tns, $port->{name}} = $port;
@@ -758,8 +763,8 @@ sub operations(@)
     my @ops;
     my @services = $self->findDef('service');
     foreach my $service (@services)
-    {
-        next if $args{service} && $args{service} ne $service->{name};
+    {   my $sname = $service->{name};
+        next if $args{service} && $args{service} ne $sname;
 
         my @ports = @{$service->{wsdl_port} || []};
         foreach my $port (@ports)
@@ -778,22 +783,27 @@ sub operations(@)
 
             my %all_ops;
             foreach my $operation ( @{$binding->{wsdl_operation}||[]} )
-            {   my $name = $operation->{name};
-                if($all_ops{$name}++)
-                {   panic __x"operation {name} found again; pick service from {services}"
-                      , services => [map $_->{name}, @services], _join => ', '
+            {   my $opname = $operation->{name};
+
+                if(my $has = $all_ops{$opname})
+                {   error __x"operation {name} found again; choose service {has} or {also}"
+                      , name => $opname, has => $has->serviceName
+                      , also => $sname
                         if @services > 1 && !$args{service};
-                    panic __x"need one set of operations, pick port from {ports}"
+
+                    error __x"need one set of operations, pick port from {ports}"
                        , ports => [ map $_->{name}, @ports ], _join => ', ';
                 }
   
-                push @ops, $self->operation
-                  ( service   => $service->{name}
+                my $op = $all_ops{$opname} = $self->operation
+                  ( service   => $sname
                   , port      => $port->{name}
                   , binding   => $bindtype
-                  , operation => $name
+                  , operation => $opname
                   , portType  => $type
                   );
+
+                push @ops, $op;
             }
         }
     }
@@ -829,7 +839,7 @@ sub endPoint(@)
 
     my $port;
     my @ports     = @{$service->{wsdl_port} || []};
-    my @portnames = map {$_->{name}} @ports;
+    my @portnames = map $_->{name}, @ports;
     if(my $portname = delete $args{port})
     {   $port = first {$_->{name} eq $portname} @ports;
         error __x"cannot find port `{portname}', pick from {ports}"
