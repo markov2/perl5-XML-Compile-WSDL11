@@ -160,7 +160,7 @@ $server_expects = <<_EXPECTS;
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="$soapenv">
   <SOAP-ENV:Body>
-    <sonae:usingElement xmlns:sonae="$NSEXP">
+    <sonae:usingElement xmlns:sonae="$NSEXP" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
       <exp:list xmlns:exp="$NS">
         <item><id>1</id><name>aap</name></item>
         <item><id>2</id><name>noot</name></item>
@@ -211,7 +211,7 @@ $server_expects = <<_REQUEST;
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="$soapenv">
   <SOAP-ENV:Body>
-    <sonae:usingType xmlns:sonae="$NSEXP">
+    <sonae:usingType xmlns:sonae="$NSEXP" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
       <list>
         <item><id>1</id><name>aap</name></item>
         <item><id>2</id><name>noot</name></item>

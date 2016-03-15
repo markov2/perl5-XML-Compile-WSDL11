@@ -359,21 +359,26 @@ sub addWSDL($%)
         my @portTypes = map $_->{wsdl_portType}||(), @$toplevels;
         @portTypes==1
             or error __x"no service definition so needs 1 portType, found {nr}"
-                 , nr => scalar @portTypes;
+              , nr => scalar @portTypes;
 
         my @bindings = map $_->{wsdl_binding}||(), @$toplevels;
         @bindings==1
             or error __x"no service definition so needs 1 binding, found {nr}"
-                 , nr => scalar @bindings;
+              , nr => scalar @bindings;
 
         my $binding  = pack_type $tns, $bindings[0]->{name};
         my $portname = $portTypes[0]->{name};
         my $servname = $portname;
         $servname =~ s/Service$|(?:Service)?Port(?:Type)?$/Service/i
-             or $servname .= 'Service';
+            or $servname .= 'Service';
+
+        my $addr
+          = $bindings[0]->{soap_binding}   ? 'soap_address'
+          : $bindings[0]->{soap12_binding} ? 'soap12_address'
+          : error __x"unrecognized binding type for wsdl without service block";
 
         my %port = (name => $portname, binding => $binding
-           , soap_address => {location => 'http://localhost'} );
+           , $addr => {location => 'http://localhost'} );
 
         $index->{service}{pack_type $tns, $servname}
             = { name => $servname, wsdl_port => [ \%port ] };
@@ -438,11 +443,11 @@ sub operation(@)
     ## Service structure
     #
 
-    my $service   = $self->findDef(service => delete $args{service});
+    my $service = $self->findDef(service => delete $args{service});
 
     my $port;
-    my @ports     = @{$service->{wsdl_port} || []};
-    if(my $not = first {blessed $_} @ports)
+    my @ports   = @{$service->{wsdl_port} || []};
+    if(my $not  = first {blessed $_} @ports)
     {   error __x"not all name-spaces loaded, {ns} not parsed in port"
           , ns => $not->namespaceURI;
     }
