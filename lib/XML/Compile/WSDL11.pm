@@ -759,6 +759,10 @@ By default operations from all ports.
 Only return operations which use the binding with the specified NAME.
 By default, all bindings are accepted.
 
+=option  server_type STRING
+=default server_type C<undef>
+[3.06]
+
 =cut
 
 sub operations(@)
@@ -801,11 +805,12 @@ sub operations(@)
                 }
   
                 my $op = $all_ops{$opname} = $self->operation
-                  ( service   => $sname
-                  , port      => $port->{name}
-                  , binding   => $bindtype
-                  , operation => $opname
-                  , portType  => $type
+                  ( service     => $sname
+                  , port        => $port->{name}
+                  , binding     => $bindtype
+                  , operation   => $opname
+                  , portType    => $type
+                  , server_type => $args{server_type}
                   );
 
                 push @ops, $op;

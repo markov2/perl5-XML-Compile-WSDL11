@@ -5,6 +5,11 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
+version 3.06: Wed 11 Jan 10:01:56 CET 2017
+
+	Improvements:
+	- add missing ::WSDL11::operations(server_type)
+
 version 3.05: Tue 15 Mar 16:50:22 CET 2016
 
 	Fixes:

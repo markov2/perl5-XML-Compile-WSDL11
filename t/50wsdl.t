@@ -196,7 +196,7 @@ is($op->transport, SOAP11HTTP);
 # test $wsdl->operations
 #
 
-my @ops = $wsdl->operations;
+my @ops = $wsdl->operations; #(server_type => 'BEA');
 cmp_ok(scalar @ops, '==', 1, 'one op hash listed');
 $op = shift @ops;
 
