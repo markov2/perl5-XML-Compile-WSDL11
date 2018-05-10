@@ -5,6 +5,8 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
+version 3.08:
+
 version 3.07: Fri May 11 00:42:08 CEST 2018
 
 	Improvements:
