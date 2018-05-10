@@ -1,6 +1,7 @@
 ChangeLog
 MANIFEST
 Makefile.PL
+README.md
 bin/wsdl-explain.pl
 bin/xsd-explain.pl
 lib/XML/Compile/WSDL11.pm
@@ -13,3 +14,4 @@ t/52wsdlfault.t
 t/53wsdlrpclit.t
 t/54wsdlrpclit.t
 t/TestTools.pm
+xt/99pod.t
