@@ -7,6 +7,10 @@ todo:
 
 version 3.08:
 
+	Improvements:
+	- add dependency to XML::Compile::Tester
+	  rt.cpan.org#130097 [Kent Fredric]
+
 version 3.07: Fri May 11 00:42:08 CEST 2018
 
 	Improvements:

@@ -8,6 +8,7 @@ my $prereq =
    { XML::Compile         => 1.48
    , XML::Compile::SOAP11 => 3.23
    , XML::Compile::Cache  => 1.03
+   , XML::Compile::Tester => 0
    , Log::Report          => 1.05
    , Test::More           => 0.54
    };
