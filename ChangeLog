@@ -5,7 +5,7 @@ todo:
   - update ::WSDL on handling Faults using $trace
   - #t/76wsdl11enc.t
 
-version 3.08:
+version 3.08: Fri 27 Aug 08:08:27 CEST 2021
 
 	Improvements:
 	- add dependency to XML::Compile::Tester
